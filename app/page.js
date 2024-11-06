@@ -1,101 +1,301 @@
-import Image from "next/image";
-
+"use client";
+import { useState, useEffect } from "react";
+import { bpscQuestionsEnglish, bpscQuestionsHindi} from '../app/data';
+import QuestionComponent from './QuestionComponent';
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [lang,setLanguage]=useState("en");
+  // const questions=lang==="en"?bpscQuestionsEnglish:bpscQuestionsHindi;
+  const [timeLeft, setTimeLeft] = useState(60);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  useEffect(() => {
+    if (timeLeft === 0) return;
+    const timer = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime === 0) {
+          clearInterval(timer);
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [timeLeft]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  const toggleTheme = () => {
+    setIsDarkMode((prevMode) => !prevMode);
+  };
+
+  return (
+    <div className={`min-h-screen  p-8 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'}`}>
+
+      <section className="flex justify-between items-center p-2 border-2 border-blue-300 mb-4">
+
+        <h2 className="text-2xl font-semibold">Quiz App</h2>
+        <div id="timer" className="border-2 bg-yellow-200 border-solid text-black border-yellow-500 rounded-full px-6 py-1">00: {timeLeft} s</div>
+        <button
+          onClick={toggleTheme}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Change Theme
+        </button>
+      </section>
+
+      <section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', border: '1px solid #ccc' }}>
+        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>Welcome to Quiz...</div>
+        <button style={{
+            padding: '8px 180px',fontSize: '22px',cursor: 'pointer',backgroundColor: '#007bff',color: 'white',border: 'none',borderRadius: '8px',
+          }}>Submit</button>
+
+      </section>
+
+      <div className="m-4">
+        <QuestionComponent/>
+      </div>
+
+      <footer style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', borderTop: '1px solid #ccc' }}>
+        {/* Left Button */}
+        <button
+          style={{
+            padding: '10px 20px',fontSize: '16px',cursor: 'pointer',backgroundColor: '#007bff',color: 'white',border: 'none',borderRadius: '5px',marginLeft: '10px'
+          }}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          Previous Question
+        </button>
+        <button
+          style={{
+            padding: '10px 20px',fontSize: '16px',cursor: 'pointer',backgroundColor: '#28a745',color: 'white',border: 'none',borderRadius: '5px',marginRight: '10px'
+          }}
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+          Next Question
+        </button>
       </footer>
+
     </div>
   );
 }
+
+
+
+// import { useState } from "react";
+// import { bpscQuestionsEnglish, bpscQuestionsHindi } from '../app/data';  // Ensure the path is correct
+
+// export default function Home() {
+//   const [language, setLanguage] = useState("english"); // Language state
+
+//   // Select the set of questions based on the language
+//   const questions = language === "english" ? bpscQuestionsEnglish : bpscQuestionsHindi;
+
+//   // Toggle between English and Hindi
+//   const toggleLanguage = () => {
+//     setLanguage((prevLanguage) => (prevLanguage === "english" ? "hindi" : "english"));
+//   };
+
+//   // If questions are not available, show a loading state
+//   if (!questions || questions.length === 0) {
+//     return <div>Loading questions...</div>;
+//   }
+
+//   return (
+//     <div className="min-h-screen p-8 bg-white text-black">
+//       <section className="flex justify-between items-center p-2 border-2 border-blue-300 mb-4">
+//         <h2 className="text-2xl font-semibold">Quiz App</h2>
+//         <button
+//           onClick={toggleLanguage}
+//           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
+//         >
+//           Switch Language
+//         </button>
+//       </section>
+
+//       <section className="mb-6">
+//         {/* Render all questions */}
+//         {questions.map((questionObj, index) => (
+//           <div key={index} className="mb-6 p-4 border-2 border-gray-300 rounded-lg">
+//             <h3 className="text-xl font-semibold mb-2">{questionObj.question}</h3>
+//             <div className="flex flex-col gap-3">
+//               {questionObj.options.map((option, optionIndex) => (
+//                 <button
+//                   key={optionIndex}
+//                   className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+//                 >
+//                   {option}
+//                 </button>
+//               ))}
+//             </div>
+//           </div>
+//         ))}
+//       </section>
+//     </div>
+//   );
+// }
+
+
+// "use client";
+// import React, { useState, useEffect } from "react";
+// import { bpscQuestionsEnglish, bpscQuestionsHindi } from "../app/data"; // Adjust path if necessary
+// import QuestionList from "../app/QuestionList"; // Ensure path is correct
+
+// export default function Home() {
+//   // Language state (default to Hindi)
+//   const [languageCode, setLanguageCode] = useState("hi");
+
+//   // Timer state
+//   const [timeLeft, setTimeLeft] = useState(60);
+
+//   // Dark mode state
+//   const [isDarkMode, setIsDarkMode] = useState(true);
+
+//   // Question navigation states
+//   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
+//   // Select the appropriate set of questions based on language
+//   const questions = languageCode === "en" ? bpscQuestionsEnglish : bpscQuestionsHindi;
+
+//   // Timer logic
+//   useEffect(() => {
+//     if (timeLeft === 0) return;
+//     const timer = setInterval(() => {
+//       setTimeLeft((prevTime) => {
+//         if (prevTime === 0) {
+//           clearInterval(timer);
+//         }
+//         return prevTime - 1;
+//       });
+//     }, 1000);
+//     return () => clearInterval(timer);
+//   }, [timeLeft]);
+
+//   // Toggle dark mode
+//   const toggleTheme = () => {
+//     setIsDarkMode((prevMode) => !prevMode);
+//   };
+
+//   // Language toggle function
+//   const toggleLanguage = () => {
+//     setLanguageCode(languageCode === "en" ? "hi" : "en");
+//   };
+
+//   // Handle next question
+//   const goToNextQuestion = () => {
+//     if (currentQuestionIndex < questions.length - 1) {
+//       setCurrentQuestionIndex(currentQuestionIndex + 1);
+//     }
+//   };
+
+//   // Handle previous question
+//   const goToPreviousQuestion = () => {
+//     if (currentQuestionIndex > 0) {
+//       setCurrentQuestionIndex(currentQuestionIndex - 1);
+//     }
+//   };
+
+//   return (
+//     <div
+//       className={`min-h-screen p-8 ${isDarkMode ? "bg-gray-900 text-white" : "bg-white text-black"}`}
+//     >
+//       {/* Header section */}
+//       <section className="flex justify-between items-center p-2 border-2 border-blue-300 mb-4">
+//         <h2 className="text-2xl font-semibold">Quiz App</h2>
+//         <div
+//           id="timer"
+//           className="border-2 bg-yellow-200 border-solid text-black border-yellow-500 rounded-full px-6 py-1"
+//         >
+//           00: {timeLeft} s
+//         </div>
+//         <button
+//           onClick={toggleTheme}
+//           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
+//         >
+//           Change Theme
+//         </button>
+//       </section>
+
+//       {/* Language and Question Navigation */}
+//       <section className="flex justify-between items-center p-2 mb-4">
+//         <button
+//           onClick={toggleLanguage}
+//           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
+//         >
+//           Switch to {languageCode === "en" ? "Hindi" : "English"}
+//         </button>
+//       </section>
+
+//       <section
+//         style={{
+//           display: "flex",
+//           justifyContent: "space-between",
+//           alignItems: "center",
+//           padding: "10px",
+//           border: "1px solid #ccc",
+//         }}
+//       >
+//         <div style={{ fontSize: "24px", fontWeight: "bold" }}>Welcome to Quiz...</div>
+//         <button
+//           style={{
+//             padding: "8px 180px",
+//             fontSize: "22px",
+//             cursor: "pointer",
+//             backgroundColor: "#007bff",
+//             color: "white",
+//             border: "none",
+//             borderRadius: "8px",
+//           }}
+//         >
+//           Submit
+//         </button>
+//       </section>
+
+//       {/* Question Section */}
+//       <div>
+//         <QuestionList
+//           indices={[currentQuestionIndex]} // Passing only the current question index
+//           languageCode={languageCode}
+//         />
+//       </div>
+
+//       {/* Footer - Question Navigation */}
+//       <footer
+//         style={{
+//           display: "flex",
+//           justifyContent: "space-between",
+//           alignItems: "center",
+//           padding: "20px",
+//           borderTop: "1px solid #ccc",
+//         }}
+//       >
+//         {/* Previous Button */}
+//         <button
+//           onClick={goToPreviousQuestion}
+//           style={{
+//             padding: "10px 20px",
+//             fontSize: "16px",
+//             cursor: "pointer",
+//             backgroundColor: "#007bff",
+//             color: "white",
+//             border: "none",
+//             borderRadius: "5px",
+//             marginLeft: "10px",
+//           }}
+//         >
+//           Previous Question
+//         </button>
+//         {/* Next Button */}
+//         <button
+//           onClick={goToNextQuestion}
+//           style={{
+//             padding: "10px 20px",
+//             fontSize: "16px",
+//             cursor: "pointer",
+//             backgroundColor: "#28a745",
+//             color: "white",
+//             border: "none",
+//             borderRadius: "5px",
+//             marginRight: "10px",
+//           }}
+//         >
+//           Next Question
+//         </button>
+//       </footer>
+//     </div>
+//   );
+// }
+
