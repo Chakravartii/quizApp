@@ -1,112 +1,193 @@
-import React, { useState } from 'react';
-import { bpscQuestionsEnglish, bpscQuestionsHindi } from './data';  // Import data
+"use client";
+import React, { useState } from "react";
+import { bpscQuestionsEnglish, bpscQuestionsHindi } from "./data"; // Import data
+import Instruction from "./Instruction"; // Import Instruction component
 
-const QuestionComponent = () => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);  // Track question index
-  const [selectedAnswer, setSelectedAnswer] = useState(null);  // Track selected answer
-  const [isEnglish, setIsEnglish] = useState(true);  // Track language selection (true for English)
+const QuestionComponent = ({ onFinishQuiz, isDarkMode }) => {
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState({}); // Store selected answers
+  const [attemptedQuestions, setAttemptedQuestions] = useState([]); // Track attempted questions
+  const [isEnglish, setIsEnglish] = useState(true); // Language toggle (English or Hindi)
+  const [showInstructions, setShowInstructions] = useState(true); // Control instructions visibility
 
-  // Get the appropriate question set based on selected language
-  const questionsData = isEnglish ? bpscQuestionsEnglish : bpscQuestionsHindi;
+  const questionsData = isEnglish ? bpscQuestionsEnglish : bpscQuestionsHindi; // Determine which set of questions to use
   const { question, options, correctAnswer } = questionsData[currentQuestionIndex];
 
-  // Handle next question button click
+  // Handle next question
   const handleNextQuestion = () => {
     if (currentQuestionIndex < questionsData.length - 1) {
-      setSelectedAnswer(null); // Reset selected answer when moving to next question
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     }
   };
 
-  // Handle language toggle (change between English and Hindi)
-  const handleLanguageToggle = () => {
-    setIsEnglish(!isEnglish);
-    // Do not reset the currentQuestionIndex to 0; preserve the current index
-    setSelectedAnswer(null);  // Reset selected answer on language change
-  };
-
-  // Handle option click
-  const handleOptionClick = (option) => {
-    if (selectedAnswer === null) { // Allow click only if no answer has been selected
-      setSelectedAnswer(option);
+  // Handle previous question
+  const handlePrevQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
 
-  // Check if the selected answer is correct
-  const isAnswerCorrect = selectedAnswer === correctAnswer;
+  // Handle skipping question
+  const handleSkipQuestion = () => {
+    if (currentQuestionIndex < questionsData.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
 
-  // Check if the current question is the last one
+  // Toggle language between English and Hindi without resetting answers
+  const handleLanguageToggle = () => {
+    setIsEnglish(!isEnglish);
+  };
+
+  // Handle selecting an option
+  const handleOptionClick = (option) => {
+    if (!attemptedQuestions.includes(currentQuestionIndex)) {
+      setAnswers((prevAnswers) => ({
+        ...prevAnswers,
+        [currentQuestionIndex]: option,
+      }));
+      setAttemptedQuestions((prevAttemptedQuestions) => [
+        ...prevAttemptedQuestions,
+        currentQuestionIndex,
+      ]);
+    }
+  };
+
+  // Check if the current answer is correct
+  const isAnswerCorrect = (index) => {
+    return answers[index] === questionsData[index].correctAnswer;
+  };
+
+  // Check if this is the last question
   const isLastQuestion = currentQuestionIndex + 1 === questionsData.length;
 
+  // Handle finishing the quiz and sending results
+  const handleFinishQuiz = () => {
+    let correctAnswers = 0;
+    let incorrectAnswers = 0;
+    let unattemptedAnswers = 0;
+
+    // Calculate correct, incorrect, and unattempted answers
+    questionsData.forEach((_, index) => {
+      if (answers[index] === questionsData[index].correctAnswer) {
+        correctAnswers += 1;
+      } else if (answers[index] === undefined) {
+        unattemptedAnswers += 1;
+      } else {
+        incorrectAnswers += 1;
+      }
+    });
+
+    // Send results to parent component
+    onFinishQuiz(correctAnswers, incorrectAnswers, unattemptedAnswers, questionsData.length);
+  };
+
+  // Handle showing instructions and starting quiz
+  const handleStartQuiz = () => {
+    setShowInstructions(false); // Hide instructions and start quiz
+  };
+
   return (
-    <div className="max-w-3xl mx-auto p-4 bg-white shadow-lg rounded-lg">
-      {/* Header with question number and language toggle */}
-      <div className="flex justify-between items-center mb-4">
-        <span className="text-lg font-medium text-gray-700">
-          Question {currentQuestionIndex + 1} of {questionsData.length}
-        </span>
-        <button 
-          onClick={handleLanguageToggle}
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none"
-        >
-          Switch to {isEnglish ? "Hindi" : "English"}
-        </button>
-      </div>
+    <div
+      className={`max-w-3xl mx-auto p-4 shadow-lg rounded-lg ${
+        isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+      }`}
+    >
+      {/* Instructions Section */}
+      {showInstructions ? (
+        <Instruction
+          isEnglish={isEnglish}
+          isDarkMode={isDarkMode}
+          onStartQuiz={handleStartQuiz} // Pass the start quiz function
+          handleLanguageToggle={handleLanguageToggle} // Pass the language toggle function
+        />
+      ) : (
+        <>
+          {/* Upper Navigation Section */}
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-lg font-medium">
+              Question {currentQuestionIndex + 1} of {questionsData.length}
+            </span>
 
-      {/* Question Text */}
-      <div className="mb-4">
-        <p className="text-xl font-semibold text-gray-800">{question}</p>
-      </div>
-
-      {/* Options */}
-      <div>
-        <ol className="list-decimal pl-5 space-y-2">
-          {options.map((option, index) => (
-            <li
-              key={index}
-              onClick={() => handleOptionClick(option)}
-              className={`cursor-pointer p-2 rounded-lg transition-colors ${selectedAnswer === option ? (isAnswerCorrect ? 'bg-green-200' : 'bg-red-200') : 'bg-gray-100 hover:bg-gray-200'} ${selectedAnswer ? 'pointer-events-none' : ''}`}
+            <button
+              onClick={handleLanguageToggle}
+              className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 focus:outline-none"
             >
-              {option}
-            </li>
-          ))}
-        </ol>
-      </div>
+              Switch to {isEnglish ? "Hindi" : "English"}
+            </button>
+          </div>
 
-      {/* Answer Feedback */}
-      {selectedAnswer && (
-        <div className="mt-4">
-          <p className={`text-lg ${isAnswerCorrect ? 'text-green-600' : 'text-red-600'}`}>
-            {isAnswerCorrect ? "Correct!" : `Incorrect, the correct answer is: ${correctAnswer}`}
-          </p>
-        </div>
+          {/* Question Text */}
+          <div className="mb-4">
+            <p className="text-xl font-semibold">{question}</p>
+          </div>
+
+          {/* Options */}
+          <div>
+            <ol className="list-decimal pl-5 space-y-2">
+              {options.map((option, index) => (
+                <li
+                  key={index}
+                  onClick={() => handleOptionClick(option)}
+                  className={`cursor-pointer p-2 rounded-lg transition-colors ${
+                    answers[currentQuestionIndex] === option
+                      ? isAnswerCorrect(currentQuestionIndex)
+                        ? "bg-green-200"
+                        : "bg-red-200"
+                      : isDarkMode
+                      ? "bg-gray-700 hover:bg-gray-600"
+                      : "bg-gray-100 hover:bg-gray-200"
+                  } ${attemptedQuestions.includes(currentQuestionIndex) ? "pointer-events-none" : ""}`}
+                >
+                  {option}
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          {/* Navigation buttons */}
+          <div className="mt-4 flex justify-between">
+            <button
+              onClick={handlePrevQuestion}
+              className="bg-gray-500 text-white py-2 px-6 rounded-lg hover:bg-gray-600"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNextQuestion}
+              className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600"
+            >
+              Next
+            </button>
+          </div>
+
+          {/* Full-width Submit Test Button */}
+          <div className="w-full mt-6">
+            <button
+              onClick={handleFinishQuiz}
+              className="w-full bg-red-500 text-white py-3 rounded-lg hover:bg-red-600"
+            >
+              Submit Test
+            </button>
+          </div>
+
+          {/* Finish Quiz (Optional) */}
+          {isLastQuestion && (
+            <button
+              onClick={handleFinishQuiz}
+              className="mt-6 bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600"
+            >
+              Finish Quiz
+            </button>
+          )}
+        </>
       )}
-
-      {/* Next Button */}
-      <div className="mt-6 text-right">
-        {!isLastQuestion ? (
-          <button 
-            onClick={handleNextQuestion} 
-            className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 focus:outline-none"
-            disabled={selectedAnswer === null}  // Disable Next if no answer is selected
-          >
-            Next
-          </button>
-        ) : (
-          <button 
-            onClick={handleNextQuestion} 
-            className="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-600 focus:outline-none"
-            disabled={selectedAnswer === null}  // Disable Finish if no answer is selected
-          >
-            Finish Quiz
-          </button>
-        )}
-      </div>
     </div>
   );
 };
 
 export default QuestionComponent;
+
 
 
 
